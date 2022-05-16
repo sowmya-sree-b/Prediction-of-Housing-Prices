@@ -1,0 +1,248 @@
+---
+title: "Prediction of Housing Prices"
+author: "Sowmya Sree B"
+date: '2022-04-18'
+output: html_document
+---
+
+# **Predicting Housing Prices**
+
+```{r, include=FALSE}
+library(readr)
+library(corrplot)
+library(leaps)
+library(e1071)
+library(Metrics)
+library(vioplot)
+library(randomForest)
+library(ROCR)
+library(ggplot2)
+library(MASS)
+```
+
+```{r, include=FALSE}
+library(readr)
+house_df <- read_csv("C:/Users/sowmy/Desktop/code/data/house_data/housesData.csv")
+dim(house_df)
+str(house_df)
+```
+
+```{r}
+head(house_df)
+tail(house_df)
+dim(house_df)
+```
+
+```{r}
+summary(house_df)
+```
+
+```{r}
+house_data=house_df[,c(2:15)]
+head(house_data)
+cor_matrix=cor(house_data)
+corrplot(cor_matrix)
+```
+
+# **Frequency of different variables from the data set**
+
+```{r}
+table(house_data$bedrooms)
+```
+
+```{r}
+table(house_data$bathrooms)
+```
+
+```{r}
+table(house_data$floors)
+```
+
+```{r}
+table(house_data$waterfront)
+```
+
+```{r}
+table(house_data$view)
+```
+
+```{r}
+table(house_data$condition)
+```
+
+```{r}
+table(house_data$grade)
+```
+
+```{r}
+table(house_data$yr_built)
+```
+
+```{r}
+table(house_data$yr_renovated)
+```
+
+```{r}
+table(house_data$zipcode)
+```
+
+Data Visualization of Data Set
+
+```{r}
+library("ggplot2")
+graphing_cleanup = theme(panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(),
+                      axis.line.x = element_line(colour = 'black'),
+                      axis.line.y = element_line(colour = 'black'),
+                      legend.key = element_rect(fill = 'white'),
+                      text = element_text(size = 15))
+```
+
+Scatter plots
+
+```{r include = 'False'}
+library(grid)
+library(gridExtra)
+library("ggplot2")
+
+scatterplot_one = ggplot(data = house_data, mapping = aes(x = house_data$bedrooms, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Bedrooms") + xlab("Number of bedrooms") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_one
+```
+
+```{r include = 'False'}
+scatterplot_two = ggplot(data = house_data, mapping = aes(x = house_data$bathrooms, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Bathrooms") + xlab("Number of bathrooms") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_two
+```
+
+```{r}
+scatterplot_Three = ggplot(data = house_data, mapping = aes(x = house_data$sqft_living, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Size of living Area") + xlab("Area of living in SqFt") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Three
+```
+
+```{r}
+scatterplot_Four = ggplot(data = house_data, mapping = aes(x = house_data$sqft_lot, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Size of Lot") + xlab("Area of Lot in SqFt") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Four
+```
+
+```{r}
+scatterplot_Five = ggplot(data = house_data, mapping = aes(x = house_data$floors, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Number of Floor") + xlab("Number of Floors") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Five
+```
+
+```{r}
+scatterplot_Six = ggplot(data = house_data, mapping = aes(x = house_data$waterfront, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Waterfront") + xlab("Having waterfront") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Six
+```
+
+```{r}
+scatterplot_Seven = ggplot(data = house_data, mapping = aes(x = house_data$view, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS View") + xlab("Number of view") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Seven
+```
+
+```{r}
+scatterplot_Eight = ggplot(data = house_data, mapping = aes(x = house_data$condition, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Condition of house") + xlab("rating of condition") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Eight
+```
+
+```{r}
+scatterplot_Nine = ggplot(data = house_data, mapping = aes(x = house_data$grade, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS Grade") + xlab("Rating of Grade") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Nine
+```
+
+```{r}
+scatterplot_Ten = ggplot(data = house_data, mapping = aes(x = house_data$sqft_above, y = house_data$price)) + geom_point() + ggtitle("Scatter Plot Between Price VS SqFt_Above") + xlab("Sqft_above") + ylab("Price") + geom_smooth(method = 'lm', color = 'red1') + theme(plot.title = element_text(hjust = 0.5)) + graphing_cleanup
+scatterplot_Ten
+```
+
+```{r}
+histogramAnalysis1 = ggplot(data = house_data, mapping = aes(x = house_data$price)) + ggtitle(("Histogram of House prices")) + xlab("Prices of houses") + geom_histogram(fill = "#5DF0AE") + graphing_cleanup
+histogramAnalysis1
+```
+
+```{r}
+histogramAnalysis2 = ggplot(data = house_data, mapping = aes(x = house_data$bedrooms)) + xlab("Number of Bedrroms") + ggtitle(("Histogram of quantity of Bedrooms")) +  geom_histogram(fill = "#937FDB") + graphing_cleanup
+histogramAnalysis2
+```
+
+```{r}
+histogramAnalysis3 = ggplot(data = house_data, mapping = aes(x = house_data$waterfront)) + ggtitle(("Histogram of waterfront")) + xlab("waterfront") + geom_histogram(fill = "#1B9AF5") + graphing_cleanup
+histogramAnalysis3
+```
+
+```{r}
+histogramAnalysis4 = ggplot(data = house_data, mapping = aes(x = house_data$yr_built)) + ggtitle(("Histogram of year built")) + xlab("Year house built") + geom_histogram(fill = "#E6A395") + graphing_cleanup
+histogramAnalysis4
+```
+
+```{r}
+histogramAnalysis5 = ggplot(data = house_data, mapping = aes(x = house_data$bathrooms)) + ggtitle(("Histogram of bathrooms")) + xlab("number of bathrooms") + geom_histogram(fill = "#E6B647") + graphing_cleanup
+histogramAnalysis5
+```
+
+```{r}
+histogramAnalysis6 = ggplot(data = house_data, mapping = aes(x = house_data$floors)) + ggtitle(("Histogram of floors/levels")) + xlab("number of floors/levels") + geom_histogram(fill = "#F5477D") + graphing_cleanup
+histogramAnalysis6
+```
+
+```{r}
+histogramAnalysis7 = ggplot(data = house_data, mapping = aes(x = house_data$grade)) + ggtitle(("Histogram of rating/grade")) + xlab("rating of house") + geom_histogram(fill = "#52477D") + graphing_cleanup
+histogramAnalysis7
+```
+
+#Data Modelling
+
+Splitting data for training and test for the models in the ratio of 70:30
+
+```{r}
+set.seed(123)
+train_houserows = sample(rownames(house_df), dim(house_df)[1]*0.7)
+train_housedf = house_df[train_houserows, ]
+
+test_houserows = setdiff(rownames(house_df), train_houserows)
+test_housedf = house_df[test_houserows, ]
+```
+
+Generalized Linear Model(GLM)
+
+```{r}
+Full_model = glm(price~. ,data = train_housedf)
+summary(Full_model)
+```
+
+```{r}
+step_model <- stepAIC(Full_model, direction = 'both')
+summary(step_model)
+```
+
+```{r}
+final_model = glm(price ~ bedrooms + bathrooms + sqft_living + sqft_lot + 
+                    floors + waterfront + view + condition + grade + yr_built + 
+                     yr_renovated + age , data = house_df)
+summary(final_model)
+```
+
+```{r}
+library(car)
+vif(final_model)
+```
+
+Random Forest
+
+```{r}
+set.seed(123)
+reg_randomForest = price ~ bedrooms + bathrooms + sqft_living + sqft_lot + 
+                    floors + waterfront + view + condition + grade + yr_built + 
+                     yr_renovated + age
+model_randomForest = randomForest(reg_randomForest, house_df, ntree = 100,
+                                  nodesize = 10, proximity = T) 
+model_randomForest
+```
+
+```{r}
+plot(model_randomForest)
+```
+
+```{r}
+varImpPlot(model_randomForest)
+```
