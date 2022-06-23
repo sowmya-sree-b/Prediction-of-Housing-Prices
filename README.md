@@ -14,4 +14,5 @@ In this part, different factors has beeen analysed which are effecting the housi
 
 In this part, using GLM and random forest techiniques, data modeling is done.
 
-
+Entire code can be found in my R Pubs account or following below link
+R Pubs Link: http://rpubs.com/bsowmyasree/918085
