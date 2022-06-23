@@ -13,3 +13,5 @@ In this part, different factors has beeen analysed which are effecting the housi
 ## Part Two: Data Modeling
 
 In this part, using GLM and random forest techiniques, data modeling is done.
+
+
